@@ -1,3 +1,5 @@
+//Chiriloaea Iustina
+//3133A
 using Egc;
 
 // Program.cs conține DOAR inițializarea aplicației:

@@ -15,8 +15,11 @@ public class Transform2D
 
     public Matrix4 ModelMatrix =>
         // TODO (T1): scalare, apoi rotație, apoi translație
+        Matrix4.CreateScale(Scale.X, Scale.Y, 1.0f) *
+        Matrix4.CreateRotationZ(MathHelper.DegreesToRadians(Rotation)) *
         Matrix4.CreateTranslation(Position.X, Position.Y, Depth);
-
+    // Dacă aplicăm translația înaintea rotației, obiectul își poate schimba
+    // poziția în jurul originii scenei, în loc să se rotească în jurul centrului său.
     /// <summary>O copie independentă (folosită pentru readucerea scenei în starea inițială).</summary>
     public Transform2D Clone() => (Transform2D)MemberwiseClone();
 }
