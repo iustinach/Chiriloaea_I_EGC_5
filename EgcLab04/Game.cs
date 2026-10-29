@@ -102,6 +102,7 @@ public class Game : GameWindow
         float dt = (float)args.Time;
         SceneObject sel = _scene[_selected];
         float viteza = KeyboardState.IsKeyDown(Keys.LeftShift) ? 3.0f : 1.0f;
+        // LeftShift accelerează mișcarea, rotația și scalarea de 3 ori.
 
         const float moveSpeed = 2.0f;   // unități de lume pe secundă
         if (KeyboardState.IsKeyDown(Keys.Left))  sel.Transform.Position.X -= moveSpeed * dt * viteza;
@@ -147,7 +148,14 @@ public class Game : GameWindow
 
         // TODO (T3): la clic stânga, obiectul selectat se mută în punctul din lume aflat sub cursor
         //            (folosiți ScreenToWorld; Depth nu se schimbă)
+        if (MouseState.IsButtonPressed(MouseButton.Left))
+        {
+            Vector2 mousePixels = MouseState.Position;
+            Vector2 worldPosition = ScreenToWorld(mousePixels);
 
+            // Păstrăm adâncimea obiectului și schimbăm doar poziția X și Y.
+            sel.Transform.Position = new Vector2(worldPosition.X, worldPosition.Y);
+        }
         // TODO (T4, facultativ): clic dreapta = pivot; tasta P ținută = rotație în jurul pivotului
 
         // --- Camera: tastatura și rotița (secțiunea 6.2) -----------------------------
@@ -228,7 +236,29 @@ public class Game : GameWindow
     private Vector2 ScreenToWorld(Vector2 mousePixels)
     {
         // TODO (T3): pasul 1 (pixel → NDC), apoi pasul 2 (NDC → lume, cu inversa lui view * projection)
-        return Vector2.Zero;
+        // Pasul 1: transformăm coordonatele pixelilor în coordonate NDC,
+        // unde centrul ecranului este (0, 0), iar intervalul este [-1, 1].
+        float x = 2.0f * mousePixels.X / ClientSize.X - 1.0f;
+        float y = 1.0f - 2.0f * mousePixels.Y / ClientSize.Y;
+
+
+
+        // Inversăm axa Y deoarece coordonatele mouse-ului cresc în jos,
+        // în timp ce coordonatele lumii cresc în sus.
+        Vector4 ndc = new Vector4(x, y, -1.0f, 1.0f);
+        // Pasul 2: transformăm din NDC în coordonate ale lumii
+        // folosind inversa matricei View * Projection.
+        Matrix4 viewProjection = _camera.ProjectionMatrix * _camera.ViewMatrix;
+        Matrix4 inverseViewProjection = viewProjection.Inverted();
+
+        Vector4 world = Vector4.TransformRow(ndc, inverseViewProjection);
+        if (MathF.Abs(world.W) > 0.00001f)
+        {
+            world.X /= world.W;
+            world.Y /= world.W;
+        }
+
+        return new Vector2(world.X, world.Y);
     }
 
     /// <summary>Tasta R: obiectele revin la transformările inițiale, camera la starea inițială.</summary>
