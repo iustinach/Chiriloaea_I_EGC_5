@@ -33,6 +33,9 @@ public class Game : GameWindow
     // Pivotul în jurul căruia se rotește obiectul selectat.
     private Vector2 _pivot;
     private bool _hasPivot = false;
+    // T5: triunghiul satelit și unghiul curent al orbitei.
+    private Mesh _satelliteMesh;
+    private float _satelliteAngle = 0.0f;
 
     public Game(int width, int height, string title)
         : base(GameWindowSettings.Default,
@@ -72,6 +75,8 @@ public class Game : GameWindow
                   new Transform2D { Position = new Vector2(2.0f, 1.0f) });
         AddObject("cerc", Shapes.RegularPolygon(64, 0.5f),
                   new Transform2D { Position = new Vector2(0.8f, -0.6f), Depth = 2.0f });
+        // T5: satelitul folosește un triunghi mic și nu poate fi selectat separat.
+        _satelliteMesh = Shapes.Triangle();
     }
 
     /// <summary>Adaugă un obiect în scenă și reține transformarea lui inițială (pentru tasta R).</summary>
@@ -216,6 +221,12 @@ public class Game : GameWindow
             // Rotim și obiectul propriu-zis cu 90 de grade pe secundă.
             sel.Transform.Rotation += 90.0f * dt;
         }
+        // T5: o rotație completă a orbitei durează 4 secunde.
+        _satelliteAngle += MathHelper.TwoPi * dt / 4.0f;
+
+        // Păstrăm unghiul într-un interval de la 0 la 2π.
+        if (_satelliteAngle >= MathHelper.TwoPi)
+            _satelliteAngle -= MathHelper.TwoPi;
 
     }
 
@@ -246,7 +257,17 @@ public class Game : GameWindow
         }
 
         // TODO (T5, facultativ): satelitul obiectului selectat
+        SceneObject parinte = _scene[_selected];
 
+        Matrix4 modelSatelit =
+            Matrix4.CreateScale(0.3f) *
+            Matrix4.CreateTranslation(1.2f, 0.0f, 0.0f) *
+            Matrix4.CreateRotationZ(_satelliteAngle) *
+            parinte.Transform.ModelMatrix;
+
+        _shader.SetMatrix4("uModel", modelSatelit);
+        _shader.SetColor("uTint", new Color4(1.0f, 0.85f, 0.2f, 1.0f));
+        _satelliteMesh.Draw();
         // 5. Afișăm cadrul terminat: back buffer <-> front buffer.
         SwapBuffers();
     }
