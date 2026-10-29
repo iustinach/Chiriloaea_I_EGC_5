@@ -30,6 +30,9 @@ public class Game : GameWindow
     private double _secondTimer;
     private int _frames, _lastFrames;
     private bool _titleDirty = true;
+    // Pivotul în jurul căruia se rotește obiectul selectat.
+    private Vector2 _pivot;
+    private bool _hasPivot = false;
 
     public Game(int width, int height, string title)
         : base(GameWindowSettings.Default,
@@ -156,8 +159,14 @@ public class Game : GameWindow
             // Păstrăm adâncimea obiectului și schimbăm doar poziția X și Y.
             sel.Transform.Position = new Vector2(worldPosition.X, worldPosition.Y);
         }
-        // TODO (T4, facultativ): clic dreapta = pivot; tasta P ținută = rotație în jurul pivotului
 
+        // TODO (T4, facultativ): clic dreapta = pivot; tasta P ținută = rotație în jurul pivotului
+        // Clic dreapta stabilește pivotul în punctul din lume aflat sub cursor.
+        if (MouseState.IsButtonPressed(MouseButton.Right))
+        {
+            _pivot = ScreenToWorld(MouseState.Position);
+            _hasPivot = true;
+        }
         // --- Camera: tastatura și rotița (secțiunea 6.2) -----------------------------
 
         float camSpeed = 3.0f / _camera.Zoom;                    // unități de lume pe secundă
@@ -186,6 +195,28 @@ public class Game : GameWindow
             Title = $"{_baseTitle} | selectat: {_scene[_selected].Name} | proiecție {projection} | FPS: {_lastFrames}";
             _titleDirty = false;
         }
+
+        if (_hasPivot && KeyboardState.IsKeyDown(Keys.P))
+        {
+            // Rotația este de 90 de grade pe secundă.
+            float unghi = MathHelper.DegreesToRadians(90.0f * dt);
+
+            // Calculăm poziția obiectului față de pivot.
+            Vector2 diferenta = sel.Transform.Position - _pivot;
+
+            float cos = MathF.Cos(unghi);
+            float sin = MathF.Sin(unghi);
+
+            // Rotim poziția obiectului în jurul pivotului.
+            sel.Transform.Position = new Vector2(
+                _pivot.X + diferenta.X * cos - diferenta.Y * sin,
+                _pivot.Y + diferenta.X * sin + diferenta.Y * cos
+            );
+
+            // Rotim și obiectul propriu-zis cu 90 de grade pe secundă.
+            sel.Transform.Rotation += 90.0f * dt;
+        }
+
     }
 
     /// <summary>Apelată la fiecare iterație a buclei: DESENAREA unui cadru.</summary>
@@ -242,7 +273,9 @@ public class Game : GameWindow
         float y = 1.0f - 2.0f * mousePixels.Y / ClientSize.Y;
 
 
-
+        // Coordonata Z = -1 reprezintă planul apropiat (near plane) în NDC,
+        // iar Z = 1 reprezintă planul îndepărtat (far plane). Folosim ambele
+        // valori pentru a construi raza care trece prin poziția cursorului.
         // Inversăm axa Y deoarece coordonatele mouse-ului cresc în jos,
         // în timp ce coordonatele lumii cresc în sus.
         Vector4 ndc = new Vector4(x, y, -1.0f, 1.0f);
