@@ -268,6 +268,9 @@ public class Game : GameWindow
         _shader.SetMatrix4("uModel", modelSatelit);
         _shader.SetColor("uTint", new Color4(1.0f, 0.85f, 0.2f, 1.0f));
         _satelliteMesh.Draw();
+        // Când obiectul părinte este scalat, se scalează și orbita,
+        // deoarece matricea model a părintelui este aplicată după transformarea locală a satelitului.
+        // Astfel, distanța aparentă față de centru crește sau scade odată cu scara părintelui.
         // 5. Afișăm cadrul terminat: back buffer <-> front buffer.
         SwapBuffers();
     }
