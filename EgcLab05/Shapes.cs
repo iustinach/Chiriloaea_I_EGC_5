@@ -179,9 +179,9 @@ public static class Shapes
                 float longitude = u * 2.0f * MathF.PI;            // 0° .. 360°
 
                 // TODO 5.4 (a): poziția vârfului (coordonate sferice -> carteziene, secțiunea 2.2)
-                float x = 0.0f;
-                float y = 0.0f;
-                float z = 0.0f;
+                float x = radius * MathF.Cos(latitude) * MathF.Cos(longitude);
+                float y = radius * MathF.Sin(latitude);
+                float z = radius * MathF.Cos(latitude) * MathF.Sin(longitude);
 
                 SetVertex(vertices, i * columns + j, x, y, z, u, v, 0.35f);
             }
@@ -200,6 +200,13 @@ public static class Shapes
 
                 // TODO 5.4 (b): cele două triunghiuri ale celulei, în sens trigonometric privite din afară
                 //               (6 indici: indices[k++] = ...)
+                indices[k++] = topLeft;
+                indices[k++] = bottomLeft;
+                indices[k++] = topRight;
+
+                indices[k++] = topRight;
+                indices[k++] = bottomLeft;
+                indices[k++] = bottomRight;
             }
         }
 
