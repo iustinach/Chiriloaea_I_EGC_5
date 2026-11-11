@@ -89,8 +89,9 @@ public class FpsCamera : Camera
         //           Pași: (1) forward; (2) vectorul "move" = suma direcțiilor tastelor apăsate
         //           (W +forward, S -forward, D +_right, A -_right); (3) normalizați "move";
         //           (4) _position += move * viteză * dt (viteza crește de SprintFactor ori cu Shift stânga).
-        Vector3 forward = new Vector3(_front.X, 0.0f, _front.Z).Normalized();
-
+        Vector3 forward = FreeFly
+            ? _front
+            : new Vector3(_front.X, 0.0f, _front.Z).Normalized();
         Vector3 move = Vector3.Zero;
 
         if (keyboard.IsKeyDown(Keys.W))
@@ -104,6 +105,11 @@ public class FpsCamera : Camera
 
         if (keyboard.IsKeyDown(Keys.A))
             move -= _right;
+        if (FreeFly && keyboard.IsKeyDown(Keys.Space))
+            move += WorldUp;
+
+        if (FreeFly && keyboard.IsKeyDown(Keys.LeftControl))
+            move -= WorldUp;
 
         if (move.LengthSquared > 0.0f)
         {
