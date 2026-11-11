@@ -22,7 +22,7 @@ public static class Easing
     public static float EaseOut(float t)
     {
         // TODO 6.2 (a): 1 - (1 - t)²   (EaseIn "întoarsă")
-        return t;   // provizoriu
+        return t * t * (3.0f - 2.0f * t);
     }
 
     /// <summary>Pornește încet, accelerează, apoi frânează la sosire.</summary>
