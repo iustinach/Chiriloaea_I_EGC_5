@@ -27,10 +27,16 @@ public abstract class Camera
     public float AspectRatio { get; private set; } = 4.0f / 3.0f;
 
     /// <summary>Matricea de proiecție în perspectivă.</summary>
-    public Matrix4 ProjectionMatrix =>
-        // TODO 5.1 (a): proiecția în perspectivă, cu FieldOfView (în radiani!), AspectRatio, Near, Far.
-        //               Până atunci se folosește proiecția ortografică din laboratorul 4.
-        TemporaryOrthographic();
+    ///  // TODO 5.1 (a): proiecția în perspectivă, cu FieldOfView (în radiani!), AspectRatio, Near, Far.
+    //               Până atunci se folosește proiecția ortografică din laboratorul 4.
+
+    public Matrix4 ProjectionMatrix => Matrix4.CreatePerspectiveFieldOfView(
+        MathHelper.DegreesToRadians(FieldOfView),
+        AspectRatio,
+        Near,
+        Far
+    );
+   
 
     /// <summary>Proiecția ortografică din laboratorul 4 (provizorie; se șterge după TODO 5.1).</summary>
     private Matrix4 TemporaryOrthographic()
