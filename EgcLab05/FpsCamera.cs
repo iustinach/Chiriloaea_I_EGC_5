@@ -71,7 +71,13 @@ public class FpsCamera : Camera
 
         // TODO 5.1 (c): rotița în sus (ScrollDelta.Y > 0) micșorează FOV-ul (efect de zoom)
         //               (folosiți ChangeFov din clasa Camera și FovStep)
+        // --- 2. FOV: rotița mouse-ului --------------------------------------------
 
+        // Rotița în sus micșorează FOV-ul, iar în jos îl mărește.
+        if (mouse.ScrollDelta.Y != 0)
+        {
+            ChangeFov(-mouse.ScrollDelta.Y * FovStep);
+        }
 
         // --- 3. Deplasarea: W A S D ---------------------------------------------------
 
