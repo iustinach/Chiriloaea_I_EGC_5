@@ -63,7 +63,10 @@ public class FpsCamera : Camera
         // TODO 5.5 (a): deplasarea pe orizontală modifică yaw, cea pe verticală modifică pitch.
         //               Atenție: pe ecran Y crește în jos, iar pitch pozitiv înseamnă privire în sus.
         //               Apoi limitați pitch-ul la intervalul [-MaxPitch, MaxPitch].
+        Yaw += mouseDelta.X * MouseSensitivity;
+        Pitch -= mouseDelta.Y * MouseSensitivity;
 
+        Pitch = MathHelper.Clamp(Pitch, -MaxPitch, MaxPitch);
 
         UpdateVectors();
 
@@ -86,7 +89,33 @@ public class FpsCamera : Camera
         //           Pași: (1) forward; (2) vectorul "move" = suma direcțiilor tastelor apăsate
         //           (W +forward, S -forward, D +_right, A -_right); (3) normalizați "move";
         //           (4) _position += move * viteză * dt (viteza crește de SprintFactor ori cu Shift stânga).
+        Vector3 forward = new Vector3(_front.X, 0.0f, _front.Z).Normalized();
 
+        Vector3 move = Vector3.Zero;
+
+        if (keyboard.IsKeyDown(Keys.W))
+            move += forward;
+
+        if (keyboard.IsKeyDown(Keys.S))
+            move -= forward;
+
+        if (keyboard.IsKeyDown(Keys.D))
+            move += _right;
+
+        if (keyboard.IsKeyDown(Keys.A))
+            move -= _right;
+
+        if (move.LengthSquared > 0.0f)
+        {
+            move.Normalize();
+
+            float speed = MoveSpeed;
+
+            if (keyboard.IsKeyDown(Keys.LeftShift))
+                speed *= SprintFactor;
+
+            _position += move * speed * dt;
+        }
         // TODO 5.7 (facultativ): în zbor liber (FreeFly), "forward" este chiar _front,
         //           iar Space urcă și Ctrl stânga coboară (pe axa Y a lumii, WorldUp).
     }
@@ -99,9 +128,17 @@ public class FpsCamera : Camera
         // TODO 5.5 (b): Front din yaw și pitch (formula din secțiunea 5.2), apoi Right și Up
         //               prin produse vectoriale; toți trei normalizați.
         //               Până atunci camera privește mereu spre -Z.
-        _front = -Vector3.UnitZ;
-        _right = Vector3.UnitX;
-        _up = Vector3.UnitY;
+        float yawRadians = MathHelper.DegreesToRadians(Yaw);
+        float pitchRadians = MathHelper.DegreesToRadians(Pitch);
+
+        _front = new Vector3(
+            MathF.Cos(yawRadians) * MathF.Cos(pitchRadians),
+            MathF.Sin(pitchRadians),
+            MathF.Sin(yawRadians) * MathF.Cos(pitchRadians)
+        ).Normalized();
+
+        _right = Vector3.Cross(_front, WorldUp).Normalized();
+        _up = Vector3.Cross(_right, _front).Normalized();
     }
 
     public override void Reset()
