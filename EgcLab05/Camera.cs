@@ -53,7 +53,13 @@ public abstract class Camera
         get
         {
             // TODO 5.1 (b): hFOV = 2 · atan( tan(vFOV / 2) · aspect ); atenție la grade / radiani
-            return 0.0f;
+            float verticalFovRadians = MathHelper.DegreesToRadians(FieldOfView);
+
+            float horizontalFovRadians = 2.0f * MathF.Atan(
+                MathF.Tan(verticalFovRadians / 2.0f) * AspectRatio
+            );
+
+            return MathHelper.RadiansToDegrees(horizontalFovRadians);
         }
     }
 
