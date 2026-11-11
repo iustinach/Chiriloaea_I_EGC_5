@@ -89,7 +89,7 @@ public class Game : GameWindow
         Mesh cube = AddMesh(Shapes.Cube());
         Mesh sphere = AddMesh(Shapes.Sphere(1.0f, 32, 16));
         Mesh smallSphere = AddMesh(Shapes.Sphere(0.35f, 16, 8));
-
+        Mesh cylinder = AddMesh(Shapes.Cylinder(0.5f, 1.5f, 32));
         // Podeaua și axele (axele puțin deasupra grilei, ca să nu se suprapună liniile).
         AddObject("podea", grid);
         AddObject("axe", axes).Transform.Position = new Vector3(0.0f, 0.01f, 0.0f);
@@ -123,6 +123,9 @@ public class Game : GameWindow
 
         // TODO 5.8 (facultativ): un cilindru generat procedural, adăugat în scenă
         //           (de exemplu în punctul (-1.5, 0.75, -6)).
+        // Cilindrul procedural.
+        SceneObject cylinderObject = AddObject("cilindru", cylinder);
+        cylinderObject.Transform.Position = new Vector3(-1.5f, 0.75f, -6.0f);
     }
 
     private Mesh AddMesh(Mesh mesh)

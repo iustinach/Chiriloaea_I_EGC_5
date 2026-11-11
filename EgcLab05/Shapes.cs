@@ -27,8 +27,7 @@ public static class Shapes
     {
         int linesPerDirection = 2 * halfSize + 1;
         var vertices = new float[linesPerDirection * 2 * 2 * Mesh.FloatsPerVertex];   // 2 direcții × 2 capete
-        var indices = new uint[linesPerDirection * 2 * 2];
-
+        var indices = new uint[linesPerDirection * 4];
         float extent = halfSize * step;
         int v = 0;
         for (int k = -halfSize; k <= halfSize; k++)
@@ -219,10 +218,113 @@ public static class Shapes
     /// Suprafața laterală = o grilă cu 2 rânduri (ca sfera, cu un singur "stack"); capacele = evantaie.
     /// </summary>
     public static Mesh Cylinder(float radius, float height, int segments)
+
     {
-        // TODO 5.8 (facultativ): vârfurile și indicii cilindrului; până atunci, o formă goală.
-        return new Mesh(Array.Empty<float>(), Array.Empty<uint>());
+        int columns = segments + 1;
+
+        // Suprafața laterală: două rânduri, fiecare cu segments + 1 vârfuri.
+        // Capacele: câte un centru și câte segments vârfuri pe circumferință.
+        int sideVertexCount = 2 * columns;
+        int capVertexCount = 2 * (segments + 2);
+
+        var vertices = new float[(sideVertexCount + capVertexCount) * Mesh.FloatsPerVertex];
+
+        float halfHeight = height / 2.0f;
+
+        // 1. Vârfurile suprafeței laterale.
+        for (int j = 0; j <= segments; j++)
+        {
+            float u = (float)j / segments;
+            float angle = u * 2.0f * MathF.PI;
+
+            float x = radius * MathF.Cos(angle);
+            float z = radius * MathF.Sin(angle);
+
+            // Rândul de jos.
+            SetVertex(vertices, j, x, -halfHeight, z, u, 0.0f, 0.35f);
+
+            // Rândul de sus.
+            SetVertex(vertices, columns + j, x, halfHeight, z, u, 1.0f, 0.35f);
+        }
+        // 2. Indicii suprafeței laterale: fiecare segment formează două triunghiuri.
+        var indices = new uint[segments * 12 ];
+
+        int k = 0;
+
+        for (int j = 0; j < segments; j++)
+        {
+            uint bottomLeft = (uint)j;
+            uint bottomRight = (uint)(j + 1);
+            uint topLeft = (uint)(columns + j);
+            uint topRight = (uint)(columns + j + 1);
+
+            indices[k++] = topLeft;
+            indices[k++] = bottomLeft;
+            indices[k++] = topRight;
+
+            indices[k++] = topRight;
+            indices[k++] = bottomLeft;
+            indices[k++] = bottomRight;
+        }
+        // 3. Capacul de jos (-Y).
+        int bottomCenter = sideVertexCount;
+        SetVertex(vertices, bottomCenter, 0.0f, -halfHeight, 0.0f,
+                  0.8f, 0.2f, 0.2f);
+
+        for (int j = 0; j <= segments; j++)
+        {
+            int vertexIndex = bottomCenter + 1 + j;
+
+            float angle = (float)j / segments * 2.0f * MathF.PI;
+            float x = radius * MathF.Cos(angle);
+            float z = radius * MathF.Sin(angle);
+
+            SetVertex(vertices, vertexIndex, x, -halfHeight, z,
+                      0.8f, 0.2f, 0.2f);
+        }
+        // Indicii capacului inferior: triunghiuri orientate spre exterior (-Y).
+        for (int j = 0; j < segments; j++)
+        {
+            uint center = (uint)bottomCenter;
+            uint current = (uint)(bottomCenter + 1 + j);
+            uint next = (uint)(bottomCenter + 1 + j + 1);
+
+            indices[k++] = center;
+            indices[k++] = next;
+            indices[k++] = current;
+        }
+        // 4. Capacul de sus (+Y).
+        int topCenter = sideVertexCount + segments + 2;
+
+        SetVertex(vertices, topCenter, 0.0f, halfHeight, 0.0f,
+                  0.2f, 0.8f, 0.2f);
+
+        for (int j = 0; j <= segments; j++)
+        {
+            int vertexIndex = topCenter + 1 + j;
+
+            float angle = (float)j / segments * 2.0f * MathF.PI;
+            float x = radius * MathF.Cos(angle);
+            float z = radius * MathF.Sin(angle);
+
+            SetVertex(vertices, vertexIndex, x, halfHeight, z,
+                      0.2f, 0.8f, 0.2f);
+        }
+
+        // Indicii capacului superior: triunghiuri orientate spre exterior (+Y).
+        for (int j = 0; j < segments; j++)
+        {
+            uint center = (uint)topCenter;
+            uint current = (uint)(topCenter + 1 + j);
+            uint next = (uint)(topCenter + 1 + j + 1);
+
+            indices[k++] = center;
+            indices[k++] = current;
+            indices[k++] = next;
+        }
+        return new Mesh(vertices, indices);
     }
+
 
     // =====================================================================================
     // Funcții ajutătoare
