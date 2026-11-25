@@ -72,12 +72,21 @@ public sealed class Shader : IDisposable
     {
         // TODO 7.1: reîncărcarea programului (secțiunea 2.3)
         //   1. construiți un program NOU din fișiere: if (!TryBuild(out int newHandle)) return false;
+        if (!TryBuild(out int newHandle))
+            return false;
         //      (la eroare, TryBuild a afișat deja mesajul, iar programul vechi rămâne activ);
         //   2. ștergeți programul vechi (GL.DeleteProgram(Handle)), apoi Handle = newHandle; IsFallback = false;
+        GL.DeleteProgram(Handle);
+        Handle = newHandle;
+        IsFallback = false;
+
         //   3. locațiile uniformelor aparțin programului vechi: goliți _uniformLocations, _missing și _reported;
+        _uniformLocations.Clear();
+        _missing.Clear();
+        _reported.Clear();
         //   4. return true.
-        ConsolePanel.PrintMessage($"{Name}: reîncărcarea nu este scrisă încă (TODO 7.1).");
-        return false;
+        //ConsolePanel.PrintMessage($"{Name}: reîncărcarea nu este scrisă încă (TODO 7.1).");
+        return true;
     }
 
     /// <summary>Adevărat dacă unul dintre fișiere a fost salvat după ultima compilare (pentru reîncărcarea automată).</summary>
