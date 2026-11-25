@@ -71,6 +71,7 @@ public class Game : GameWindow
         BindCommonActions();
 
         _scenes.Add(new LabScene());
+        _scenes.Add(new PlanetaScene());
         // TEMA: adăugați aici scena (sau scenele) temei; Tab trece de la o scenă la alta.
 
         foreach (Scene scene in _scenes)
